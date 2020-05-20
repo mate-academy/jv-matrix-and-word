@@ -3,6 +3,9 @@ package core.basesyntax;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+
 public class WordSearcherTest {
     private WordSearcher wordSearcher = new WordSearcher();
 
@@ -55,20 +58,16 @@ public class WordSearcherTest {
                 wordSearcher.findWordSequence(matrixC, "spring"));
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void wordSequence_invalidResult() {
-        Assert.assertEquals("Can't find the sequence of letters",
-                wordSearcher.findWordSequence(matrixA, "university"));
-        Assert.assertEquals("Can't find the sequence of letters",
-                wordSearcher.findWordSequence(matrixB, "winter"));
-        Assert.assertEquals("Can't find the sequence of letters",
-                wordSearcher.findWordSequence(matrixC, "autumn"));
+        wordSearcher.findWordSequence(matrixA, "university");
+        wordSearcher.findWordSequence(matrixB, "winter");
+        wordSearcher.findWordSequence(matrixC, "autumn");
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void wordSequence_tooLongWord() {
-        Assert.assertEquals("Can't find the sequence of letters",
-                wordSearcher.findWordSequence(matrixA, "mateacademylongtest"));
+        wordSearcher.findWordSequence(matrixA, "mateacademylongtest");
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -87,5 +86,17 @@ public class WordSearcherTest {
         wordSearcher.findWordSequence(matrixA, "^");
         wordSearcher.findWordSequence(matrixA, "@");
         wordSearcher.findWordSequence(matrixA, "#");
+    }
+
+    @Test
+    public void wordSequence_isStateless() {
+        Class<WordSearcher> wordSearcherClass = WordSearcher.class;
+        Field[] declaredFields = wordSearcherClass.getDeclaredFields();
+        for (int i = 0; i < declaredFields.length; i++) {
+            boolean isFinal = Modifier.isFinal(declaredFields[0].getModifiers());
+            boolean isStatic = Modifier.isStatic(declaredFields[0].getModifiers());
+            Assert.assertTrue("Let's make " + wordSearcherClass + " stateless. " +
+                    "You can use only final fields and constants.", isFinal || (isFinal && isStatic));
+        }
     }
 }
